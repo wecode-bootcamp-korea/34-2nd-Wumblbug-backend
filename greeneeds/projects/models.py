@@ -1,17 +1,17 @@
 from django.db    import models
 
-from users.models import User
 from core.models  import TimeStampModel
+import users
 
 class Project(TimeStampModel):
-    user            = models.ForeignKey(User, on_delete=models.CASCADE)
+    user            = models.ForeignKey('users.User', on_delete=models.CASCADE)
     category        = models.ForeignKey("Category", on_delete=models.CASCADE)
     title           = models.CharField(max_length=70)
     shortcut_title  = models.CharField(max_length=50)
     summary         = models.CharField(max_length=100)
     price           = models.DecimalField(max_digits=7, decimal_places=2)
     thumbnail       = models.URLField(max_length=150)
-    pk_uri          = models.CharField(max_length=50)
+    pk_uri          = models.CharField(max_length=50, unique=True)
     target_amount   = models.DecimalField(max_digits=9, decimal_places=2)
     start_datetime  = models.DateField()
     end_datetime    = models.DateField()
