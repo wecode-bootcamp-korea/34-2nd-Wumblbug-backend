@@ -9,6 +9,7 @@ class Project(TimeStampModel):
     title           = models.CharField(max_length=70)
     shortcut_title  = models.CharField(max_length=50)
     summary         = models.CharField(max_length=100)
+    total_amount    = models.DecimalField(max_digits=9, decimal_places=2)
     price           = models.DecimalField(max_digits=7, decimal_places=2)
     thumbnail       = models.URLField(max_length=150)
     pk_uri          = models.CharField(max_length=50, unique=True)
