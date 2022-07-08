@@ -6,12 +6,12 @@ import users
 class Project(TimeStampModel):
     user            = models.ForeignKey('users.User', on_delete=models.CASCADE)
     category        = models.ForeignKey("Category", on_delete=models.CASCADE)
-    title           = models.CharField(max_length=70)
-    shortcut_title  = models.CharField(max_length=50)
-    summary         = models.CharField(max_length=100)
+    title           = models.CharField(max_length=70, null=True)
+    shortcut_title  = models.CharField(max_length=50, null=True)
+    summary         = models.CharField(max_length=100, null=True)
     total_amount    = models.DecimalField(max_digits=9, decimal_places=2)
     price           = models.DecimalField(max_digits=7, decimal_places=2)
-    thumbnail       = models.URLField(max_length=150)
+    thumbnail       = models.URLField(max_length=150, null=True)
     pk_uri          = models.CharField(max_length=50, unique=True)
     target_amount   = models.DecimalField(max_digits=9, decimal_places=2)
     start_datetime  = models.DateField()
@@ -19,7 +19,8 @@ class Project(TimeStampModel):
     pay_end_date    = models.DateField()
     settlement_date = models.DateField()
     introduction    = models.CharField(max_length=200)
-    budget_plan     = models.CharField(max_length=200)
+    video_url       = models.URLField(max_length=200, null=True)
+    budget_plan     = models.CharField(max_length=200, null=True)
     organizations   = models.ManyToManyField("Organization", through="ProjectOrganization", related_name="project")
 
     class Meta:
