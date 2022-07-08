@@ -4,8 +4,9 @@ from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Count
 
-from projects.models import Project
+from projects.models import Organization, Project, ProjectImage, Category
 from core.utils      import login_decorator
+from core.s3upload   import FileUpload, s3_client
 
 class ProjectDetailView(View):
      def get(self, request, project_id):
@@ -79,14 +80,33 @@ class ProjectListView(View):
           except Project.DoesNotExist:
                return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
 
-class UserView(View):
      @login_decorator
-     def get(self, request):
-          user = request.user
+     def post(self, request):
+          try: 
+               file           = request.FILES.get('formData', None)
+               s3__client     = FileUpload(s3_client)
+               upload_img_url = s3__client.upload(file)
+               user           = request.user
+               organizations  = Organization.objects.all()
 
-          result = {
-               'user_id'  : user.id,
-               'nickname' : user.nickname,
-               'email'    : user.email
-          }
-          return JsonResponse({'result': result}, status=200)
+               project = Project.objects.create(
+                    user            = user,
+                    category        = Category.objects.get(id=request.POST.get('category', None)),
+                    title           = request.POST.get('title', None),
+                    summary         = request.POST.get('summary', None),
+                    target_amount   = request.POST.get('target_amount', None),
+                    start_datetime  = request.POST.get('start_datetime', None),
+                    end_datetime    = request.POST.get('end_datetime', None)
+               )
+               
+               for organization in organizations:
+                    project.organizations.add(organization)
+
+               ProjectImage.objects.create(
+                    image_url = upload_img_url,
+                    project   = project
+               )
+
+               return JsonResponse({'message' : 'PROJECT_CREATED'}, status = 201)
+          except KeyError:
+               return JsonResponse({'message' : 'KEY_ERROR'}, status = 403)

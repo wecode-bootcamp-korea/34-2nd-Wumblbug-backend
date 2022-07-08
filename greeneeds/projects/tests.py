@@ -1,7 +1,14 @@
-from django.test        import TestCase, Client
-from freezegun          import freeze_time
-from projects.models    import Category, Project, ProjectImage, Organization
-from users.models       import User
+import json, jwt
+from freezegun import freeze_time
+
+from django.test                    import TestCase, Client
+from django.test                    import TestCase, Client
+from django.conf                    import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
+
+from users.models    import User
+from projects.models import Category, Organization, Project, ProjectImage
+from unittest.mock   import patch, MagicMock
 
 @freeze_time ("2022-07-13")
 class ProjectDetailViewTest(TestCase):
@@ -150,3 +157,77 @@ class ProjectListViewTest(TestCase):
             }]})
 
         self.assertEqual(response.status_code, 200)
+
+class ProjectUploadTest(TestCase):
+    def setUp(self):
+        User.objects.create(
+            id         = 1,
+            kakao_id   = 112343434,
+            email      = 'test@mail.com',
+            nickname   = "test"
+        )
+
+        Organization.objects.bulk_create([
+            Organization(
+                id   = 1,
+                name = "클린오션"
+            ),
+            Organization(
+                id   = 2,
+                name = "월드피스"
+            ),
+            Organization(
+                id   = 3,
+                name = "그린비젼"
+            )
+        ])
+
+        Category.objects.create(
+            id              = 1,
+            name            = '가방',
+            image_url       = 'as'
+        )
+
+        self.token = jwt.encode({'user_id' : 1}, settings.SECRET_KEY, settings.ALGORITHM)
+
+    def tearDown(self):
+        User.objects.all().delete()
+        Organization.objects.all().delete()
+        Category.objects.all().delete()
+
+    @patch("projects.views.FileUpload")
+    def test_success_project_upload_view_post(self, mocked_client):
+        client = Client()
+        
+        class MockedResponse:
+            def upload(self, file):
+                return 'https://greeneeds.s3.ap-northeast-2.amazonaws.com/img/aaa'
+        
+        mocked_client.return_value = MockedResponse()
+
+        file    = SimpleUploadedFile(
+            "test.png",
+            content = b"file_content",
+            content_type = 'image/png'
+        )
+        headers = {
+            "HTTP_Authorization" : self.token,
+            "content-type" : "multipart/form-data"
+        }
+        body    = {
+            "category"        : 1,
+            "title"           : "abc",
+            "summary"         : "abc",
+            "target_amount"   : 100,
+            "start_datetime"  : "2022-07-02",
+            "end_datetime"    : "2022-07-02",
+            "formData"        : file
+        }
+        response = client.post(
+            "/projects",
+            body,
+            **headers
+        )
+        print(response.items)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json(), {'message' : 'PROJECT_CREATED'})
