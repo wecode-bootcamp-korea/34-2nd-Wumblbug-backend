@@ -40,11 +40,10 @@ class KakaoSigninTest(TestCase):
         mocked_requests.get = MagicMock(return_value = MockedResponse())
         # headers             = {"HTTP_Authorization" : "asdfsc123asd.asdf123dacvsdfg"}
         body                = {"code" : "asdf112"}
-        response            = client.post("users/signin/kakao", data=body)
+        response            = client.post("users/signin/kakao", data=json.dumps(body))
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json(), {'token': response.json()['token']})
-
                 
     @patch("users.views.requests")
     def test_fail_kakao_signinView_post_invalid_keys(self, mocked_requests):
@@ -65,7 +64,7 @@ class KakaoSigninTest(TestCase):
         mocked_requests.get = MagicMock(return_value = MockedResponse())
         # headers             = {"HTTP_Authorization" : "asdfsc123asd.asdf123dacvsdfg"}
         body                = {"code1" : "asdf112"}
-        response            = client.post("users/signin/kakao", data=body)
+        response            = client.post("users/signin/kakao", data=json.dumps(body))
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'token': response.json()['token']})
