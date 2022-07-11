@@ -1,5 +1,4 @@
-import jwt
-import json
+import json, jwt, requests
 
 from django.views     import View
 from django.http      import JsonResponse
