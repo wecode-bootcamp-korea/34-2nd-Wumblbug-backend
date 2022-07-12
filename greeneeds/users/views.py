@@ -1,19 +1,19 @@
-import jwt
 import json
 
-from django.views     import View
-from django.http      import JsonResponse
-from django.conf      import settings
+import jwt
+from django.views import View
+from django.http  import JsonResponse
+from django.conf  import settings
 
-from core.utils       import KakaoAPI
-from users.models     import User
+from core.utils   import KakaoAPI
+from users.models import User
 
 class KakaoSigninView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
             code = data['code']
-            
+
             kakao_api = KakaoAPI(settings.KAKAO_REST_API_KEY, settings.KAKAO_REDIRECT_URI)
 
             kakao_token   = kakao_api.get_kakao_token(code)
