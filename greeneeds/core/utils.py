@@ -27,10 +27,10 @@ def login_decorator(func):
             
     return wrapper
 
-class KakaoLoginAPI:
-    def __init__(self):
-        self.kakao_rest_api_key = settings.KAKAO_REST_API_KEY
-        self.kakao_redirect_uri = settings.KAKAO_REDIRECT_URI
+class KakaoAPI:
+    def __init__(self,KAKAO_REST_API_KEY, KAKAO_REDIRECT_URI):
+        self.kakao_rest_api_key = KAKAO_REST_API_KEY
+        self.kakao_redirect_uri = KAKAO_REDIRECT_URI
         self.access_token       = None
 
     def get_kakao_token(self, code):
@@ -42,22 +42,24 @@ class KakaoLoginAPI:
             "redirect_uri"    : self.kakao_redirect_uri,
             "code"            : auth_code
         }
-        headers = {'Content-type' : 'application/x-www-form-urlencoded;charset=utf-8'}
-        response  = requests.post(kakao_token_api, headers=headers, data=data, timeout=3)
+        headers  = {'Content-type' : 'application/x-www-form-urlencoded;charset=utf-8'}
+        response = requests.post(kakao_token_api, headers=headers, data=data, timeout=3)
 
-        if not response.status_code == 200:
-            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=response.status_code)
+        if not response.ok:
+            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
 
         self.access_token = response.json().get('access_token')
+        return self.access_token
         
-    def get_kakao_profile(self):
-        headers            = {
-            "Authorization": f'Bearer {self.access_token}',
-            "Content-type" : "application/x-www-form-urlencoded;charset=utf-8"
-            }
+    def get_kakao_profile(self, access_token):
+        headers = {
+            "Authorization" : f'Bearer {access_token}',
+            "Content-type"  : "application/x-www-form-urlencoded;charset=utf-8"
+        }
+        
         response = requests.post("https://kapi.kakao.com/v2/user/me", headers=headers)
         
-        if not response.status_code == 200:
-            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=response.status_code)
+        if not response.ok:
+            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
         
         return response.json()
