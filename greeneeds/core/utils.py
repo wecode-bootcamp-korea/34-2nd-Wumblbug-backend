@@ -27,7 +27,7 @@ def login_decorator(func):
             
     return wrapper
 
-class KakaoLoginAPI:
+class KakaoAPI:
     def __init__(self):
         self.kakao_rest_api_key = settings.KAKAO_REST_API_KEY
         self.kakao_redirect_uri = settings.KAKAO_REDIRECT_URI
