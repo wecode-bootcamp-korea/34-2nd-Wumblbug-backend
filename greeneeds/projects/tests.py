@@ -88,7 +88,6 @@ class ProjectDetailViewTest(TestCase):
                     'remain_days'    : 147
                 }
             })
-      
         self.assertEqual(response.status_code, 200)
 
 @freeze_time ("2022-07-13")
@@ -138,16 +137,16 @@ class ProjectListViewTest(TestCase):
         self.assertEqual(response.json(),{
             "results":[
             {
-             'id'            : 1,
-             'thumbnail'     : '1',
-             'category'      : '가방',              
-             'title'         : "화이트 버클 숄더백",
-             'summary'       : "어깨에도 채식 한 줌", 
-             'target_amount' : 720000,
-             'remain_days'   : -6,
-             'date'          : '2022-07-07',
-             'total_amount'  : 720000,
-             'like_count'    : 0     
-             }]})
+                'id'            : 1,
+                'thumbnail'     : '1',
+                'category'      : '가방',              
+                'title'         : "화이트 버클 숄더백",
+                'summary'       : "어깨에도 채식 한 줌", 
+                'target_amount' : 720000,
+                'remain_days'   : -6,
+                'date'          : '2022-07-07',
+                'total_amount'  : 720000,
+                'like_count'    : 0     
+            }]})
 
         self.assertEqual(response.status_code, 200)
