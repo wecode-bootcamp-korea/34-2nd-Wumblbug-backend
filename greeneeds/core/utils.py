@@ -4,6 +4,7 @@ from django.conf   import settings
 from django.http   import JsonResponse
 
 from users.models  import User
+from .excepts       import Kakaoerror
 
 def login_decorator(func):
 
@@ -46,7 +47,8 @@ class KakaoAPI:
         response = requests.post(kakao_token_api, headers=headers, data=data, timeout=3)
 
         if not response.ok:
-            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
+            # return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
+            raise Kakaoerror("INVALID_RESPONSE", 401)
 
         self.access_token = response.json().get('access_token')
         return self.access_token
@@ -60,6 +62,7 @@ class KakaoAPI:
         response = requests.post("https://kapi.kakao.com/v2/user/me", headers=headers)
         
         if not response.ok:
-            return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
+            # return JsonResponse({'message' : 'INVALID_RESPONSE'}, status=401)
+            raise Kakaoerror("INVALID_RESPONSE", 401)
         
         return response.json()
