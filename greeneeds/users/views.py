@@ -5,7 +5,7 @@ from django.views import View
 from django.http  import JsonResponse
 from django.conf  import settings
 
-from core.utils   import KakaoAPI
+from core.utils   import KakaoAPI, login_decorator
 from users.models import User
 
 class KakaoSigninView(View):
@@ -34,3 +34,15 @@ class KakaoSigninView(View):
                 
         except KeyError:
             return JsonResponse({'MESSAGE' : 'KEY_ERROR'}, status = 400)
+
+class UserView(View):
+    @login_decorator
+    def get(self, request):
+        user = request.user
+
+        result = {
+            'user_id'  : user.id,
+            'nickname' : user.nickname,
+            'email'    : user.email
+        }
+        return JsonResponse({'result': result}, status=200)
