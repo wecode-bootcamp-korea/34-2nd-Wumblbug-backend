@@ -78,3 +78,15 @@ class ProjectListView(View):
                return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
           except Project.DoesNotExist:
                return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
+
+class UserView(View):
+     @login_decorator
+     def get(self, request):
+          user = request.user
+
+          result = {
+               'user_id'  : user.id,
+               'nickname' : user.nickname,
+               'email'    : user.email
+          }
+          return JsonResponse({'result': result}, status=200)
