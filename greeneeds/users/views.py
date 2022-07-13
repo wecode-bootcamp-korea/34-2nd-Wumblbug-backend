@@ -1,4 +1,5 @@
 import json
+from core.excepts import Kakaoerror
 
 import jwt
 from django.views import View
@@ -34,6 +35,8 @@ class KakaoSigninView(View):
                 
         except KeyError:
             return JsonResponse({'MESSAGE' : 'KEY_ERROR'}, status = 400)
+        except Kakaoerror as e:
+            return JsonResponse({'MESSAGE' : e.message}, status = e.status)
 
 class UserView(View):
     @login_decorator
@@ -45,4 +48,4 @@ class UserView(View):
             'nickname' : user.nickname,
             'email'    : user.email
         }
-        return JsonResponse({'result': result}, status=200)
+        return JsonResponse({'RESULT': result}, status=200)
