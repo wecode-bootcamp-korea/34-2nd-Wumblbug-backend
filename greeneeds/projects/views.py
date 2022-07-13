@@ -5,6 +5,7 @@ from django.http      import JsonResponse
 from django.db.models import Count
 
 from projects.models import Project
+from core.utils      import login_decorator
 
 class ProjectDetailView(View):
      def get(self, request, project_id):
@@ -12,15 +13,15 @@ class ProjectDetailView(View):
                project = Project.objects.annotate(like_count=Count('like__id')).get(id=project_id)             
                
                images = [{
-                 "id"  : image.id,
-                 "url" : image.image_url
+                    "id"  : image.id,
+                    "url" : image.image_url
                } for image in project.projectimage_set.all()]
 
                organizations = [{
                     "id"  : org.id,
                     "name": org.name
                } for org in project.organizations.all()]
-             
+               
                results = {
                     'id'             : int(project.id),
                     'thumbmail'      : project.thumbnail,
@@ -46,32 +47,46 @@ class ProjectDetailView(View):
                return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
           
 class ProjectListView(View):
-    def get(self, request):
-        try:
-            order_keyword = request.GET.get('order', None)
-            order_prefixes = {
-                'likes' :'-like_count', 
-                'recent':'-end_datetime', 
-                'random':'?'
-            }
-            order = order_prefixes.get(order_keyword, 'id')
-            projects = Project.objects.annotate(like_count=Count('like__id'))\
-                .order_by(order)
-            
-            now= date.today()
-            results = [{
-                 'id'            : project.id,
-                 'thumbnail'     : project.thumbnail,
-                 'category'      : project.category.name,              
-                 'title'         : project.title,
-                 'summary'       : project.summary, 
-                 'target_amount' : int(project.target_amount),
-                 'remain_days'   : (project.end_datetime - now).days,
-                 'date'          : project.end_datetime,
-                 'total_amount'  : int(project.total_amount),
-                 'like_count'    : project.like_count
-                } for project in projects ]
+     def get(self, request):
+          try:
+               order_keyword = request.GET.get('order', None)
+               order_prefixes = {
+                    'likes' :'-like_count', 
+                    'recent':'-end_datetime', 
+                    'random':'?'
+               }
+               order = order_prefixes.get(order_keyword, 'id')
+               projects = Project.objects.annotate(like_count=Count('like__id'))\
+                    .order_by(order)
+               
+               now= date.today()
+               results = [{
+                    'id'            : project.id,
+                    'thumbnail'     : project.thumbnail,
+                    'category'      : project.category.name,              
+                    'title'         : project.title,
+                    'summary'       : project.summary, 
+                    'target_amount' : int(project.target_amount),
+                    'remain_days'   : (project.end_datetime - now).days,
+                    'date'          : project.end_datetime,
+                    'total_amount'  : int(project.total_amount),
+                    'like_count'    : project.like_count
+                    } for project in projects ]
 
-            return JsonResponse({'results' : results}, status = 200)
-        except KeyError:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+               return JsonResponse({'results' : results}, status = 200)
+          except KeyError:
+               return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+          except Project.DoesNotExist:
+               return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
+
+class UserView(View):
+     @login_decorator
+     def get(self, request):
+          user = request.user
+
+          result = {
+               'user_id'  : user.id,
+               'nickname' : user.nickname,
+               'email'    : user.email
+          }
+          return JsonResponse({'result': result}, status=200)
