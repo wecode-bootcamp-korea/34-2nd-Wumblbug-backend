@@ -1,5 +1,7 @@
 from datetime import date
+from sqlite3 import IntegrityError
 
+from django.db        import transaction
 from django.views     import View
 from django.http      import JsonResponse
 from django.db.models import Count
@@ -109,4 +111,40 @@ class ProjectListView(View):
 
                return JsonResponse({'message' : 'PROJECT_CREATED'}, status = 201)
           except KeyError:
-               return JsonResponse({'message' : 'KEY_ERROR'}, status = 403)
+               return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+          except Project.DoesNotExist:
+               return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
+               
+     @login_decorator
+     def post(self, request):
+          try: 
+               with transaction.atomic():
+                    file           = request.FILES.get('formData', None)
+                    s3__client     = FileUpload(s3_client)
+                    upload_img_url = s3__client.upload(file)
+                    user           = request.user
+                    organizations  = Organization.objects.all()
+
+                    project = Project.objects.create(
+                         user            = user,
+                         category        = Category.objects.get(id=request.POST.get('category', None)),
+                         title           = request.POST.get('title', None),
+                         summary         = request.POST.get('summary', None),
+                         target_amount   = request.POST.get('target_amount', None),
+                         start_datetime  = request.POST.get('start_datetime', None),
+                         end_datetime    = request.POST.get('end_datetime', None)
+                    )
+                    
+                    for organization in organizations:
+                         project.organizations.add(organization)
+
+                    ProjectImage.objects.create(
+                         image_url = upload_img_url,
+                         project   = project
+                    )
+
+               return JsonResponse({'message' : 'PROJECT_CREATED'}, status = 201)
+          except KeyError:
+               return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+          except Project.DoesNotExist:
+               return JsonResponse({'message' : 'PROJECT_DOES_NOT_EXIST'}, status = 400)
