@@ -1,7 +1,7 @@
 # Greeneeds
 
 
-[greeneeds](https://user-images.githubusercontent.com/65996045/179173662-85daefb2-5956-467e-9633-dec5ace28ea8.gif)
+![greeneeds](https://user-images.githubusercontent.com/65996045/179173662-85daefb2-5956-467e-9633-dec5ace28ea8.gif)
 
 
 ## Introduction
